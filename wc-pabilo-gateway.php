@@ -412,9 +412,9 @@ function wc_pabilo_gateway_init() {
 	}
 }
 
-add_filter( 'woocommerce_payment_gateways', 'add_wc_pabilo_gateway' );
+add_filter( 'woocommerce_payment_gateways', 'wc_pabilo_add_gateway' );
 
-function add_wc_pabilo_gateway( $methods ) {
+function wc_pabilo_add_gateway( $methods ) {
 	$methods[] = 'WC_Pabilo_Gateway';
 	return $methods;
 }
