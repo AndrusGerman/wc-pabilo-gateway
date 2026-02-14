@@ -89,10 +89,24 @@ final class WC_Pabilo_Blocks_Integration extends AbstractPaymentMethodType {
 	 * @return array
 	 */
 	public function get_payment_method_data() {
+		if ( ! $this->gateway ) {
+			return array(
+				'title'       => $this->get_setting( 'title' ),
+				'description' => $this->get_setting( 'description' ),
+				'supports'    => array(),
+				'icon'        => 'https://pabilo.app/pabilo_favicon_light.png',
+			);
+		}
+
+		$supports = array();
+		if ( isset( $this->gateway->supports ) && is_array( $this->gateway->supports ) ) {
+			$supports = array_filter( $this->gateway->supports, array( $this->gateway, 'supports' ) );
+		}
+
 		return array(
 			'title'       => $this->get_setting( 'title' ),
 			'description' => $this->get_setting( 'description' ),
-			'supports'    => array_filter( $this->gateway->supports, array( $this->gateway, 'supports' ) ),
+			'supports'    => $supports,
 			'icon'        => $this->gateway->icon,
 		);
 	}

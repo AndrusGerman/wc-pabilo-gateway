@@ -3,11 +3,15 @@
  * Plugin Name: Pasarela de Pago Pabilo para WooCommerce
  * Plugin URI: https://pabilo.app
  * Description: La Pasarela de Pago Pabilo te permite aceptar pagos vía Pago Móvil y Transferencia Bancaria (Banco de Venezuela, Mercantil, Banesco, Provincial) de forma fácil y segura.
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Pabilo
  * Author URI: https://pabilo.app
  * License: GPLv2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: wc-pabilo-gateway
+ * Requires at least: 5.0
+ * Requires PHP: 7.4
+ * Requires Plugins: woocommerce
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -317,8 +321,42 @@ function wc_pabilo_gateway_init() {
 			);
 		}
 
+		/**
+		 * Verify payment status with Pabilo API before trusting webhook (security mitigation).
+		 *
+		 * @param string $payment_link_id The payment link ID from the webhook.
+		 * @param string $api_key         The Pabilo API key.
+		 * @return bool True if API confirms status is 'paid'.
+		 */
+		private function verify_payment_status_via_api( $payment_link_id, $api_key ) {
+			if ( empty( $payment_link_id ) || empty( $api_key ) ) {
+				return false;
+			}
+
+			$response = wp_remote_get(
+				'https://api.pabilo.app/paymentlink/' . sanitize_text_field( $payment_link_id ) . '/info',
+				array(
+					'headers' => array( 'appkey' => $api_key ),
+					'timeout' => 15,
+				)
+			);
+
+			if ( is_wp_error( $response ) ) {
+				return false;
+			}
+
+			$body = wp_remote_retrieve_body( $response );
+			$data = json_decode( $body, true );
+
+			$status = isset( $data['data']['payment_link']['status'] ) ? strtolower( $data['data']['payment_link']['status'] ) : '';
+			return 'paid' === $status;
+		}
+
+		/**
+		 * Handle webhook from Pabilo. Verifies payment status via API before marking order complete.
+		 */
 		public function webhook_handler() {
-			$order_id = isset( $_GET['order_id'] ) ? sanitize_text_field( $_GET['order_id'] ) : 0;
+			$order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
 
 			if ( ! $order_id ) {
 				status_header( 400 );
@@ -334,32 +372,37 @@ function wc_pabilo_gateway_init() {
 			$body = file_get_contents( 'php://input' );
 			$data = json_decode( $body, true );
 
-			// Log the webhook payload for debugging
-			$order->add_order_note( 'Webhook Pabilo Recibido: ' . print_r( $data, true ) );
+			if ( ! is_array( $data ) ) {
+				status_header( 400 );
+				exit;
+			}
 
 			// Check for payment status in the payload
-            $status = isset( $data['status'] ) ? $data['status'] : '';
+			$status = isset( $data['status'] ) ? strtolower( (string) $data['status'] ) : '';
+			$payment_link_id = isset( $data['payment_link_id'] ) ? sanitize_text_field( $data['payment_link_id'] ) : '';
 
-            // Normalize status
-            $status = strtolower( $status );
-
-            // Mark order as complete if status is 'paid'
 			if ( 'paid' === $status ) {
-				$order->payment_complete( isset( $data['payment_link_id'] ) ? $data['payment_link_id'] : '' );
-                
-                // Add note with payment details
-                $note = __( 'Pago Pabilo verificado vía webhook.', 'wc-pabilo-gateway' );
-                if ( isset( $data['payment_link_id'] ) ) {
-                    $note .= ' ID: ' . $data['payment_link_id'];
-                }
-                if ( isset( $data['user_bank_payment']['bank_reference_id'] ) ) {
-                    $note .= ' Ref: ' . $data['user_bank_payment']['bank_reference_id'];
-                }
-                
+				// Security: verify with Pabilo API before marking as paid
+				$api_key = $this->get_option( 'api_key' );
+				if ( ! $this->verify_payment_status_via_api( $payment_link_id, $api_key ) ) {
+					$order->add_order_note( __( 'Webhook Pabilo rechazado: verificación API fallida (posible fraude).', 'wc-pabilo-gateway' ) );
+					status_header( 200 );
+					exit;
+				}
+
+				$order->payment_complete( $payment_link_id );
+
+				$note = __( 'Pago Pabilo verificado vía webhook.', 'wc-pabilo-gateway' );
+				if ( $payment_link_id ) {
+					$note .= ' ID: ' . $payment_link_id;
+				}
+				if ( ! empty( $data['user_bank_payment']['bank_reference_id'] ) ) {
+					$note .= ' Ref: ' . sanitize_text_field( $data['user_bank_payment']['bank_reference_id'] );
+				}
 				$order->add_order_note( $note );
-			} elseif ( 'failed' === $status || 'canceled' === $status || 'expired' === $status ) {
-                $order->update_status( 'failed', __( 'Pago Pabilo fallido o cancelado.', 'wc-pabilo-gateway' ) );
-            }
+			} elseif ( in_array( $status, array( 'failed', 'canceled', 'expired' ), true ) ) {
+				$order->update_status( 'failed', __( 'Pago Pabilo fallido o cancelado.', 'wc-pabilo-gateway' ) );
+			}
 
 			status_header( 200 );
 			exit;

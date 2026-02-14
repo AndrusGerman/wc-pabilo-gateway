@@ -3,8 +3,10 @@ Contributors: Pabilo
 Donate link: https://pabilo.app
 Tags: woocommerce, payment gateway, venezuela, banco de venezuela, mercantil, banesco, provincial, bolivares, pago movil, transferencia
 Requires at least: 5.0
-Tested up to: 6.4
-Stable tag: 1.0.2
+Tested up to: 6.9
+Stable tag: 1.0.3
+Requires PHP: 7.4
+Requires Plugins: woocommerce
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,6 +15,8 @@ Acepta pagos vía Pago Móvil y Transferencia Bancaria desde bancos de Venezuela
 == Description ==
 
 La Pasarela de Pago Pabilo permite a las tiendas WooCommerce aceptar pagos de los principales bancos de Venezuela a través de un proceso simplificado y verificado.
+
+Este plugin actúa como interfaz para el servicio de pagos [Pabilo](https://pabilo.app). Al configurar la API Key, consientes el envío de datos de orden (monto, descripción, ID de orden) al servicio Pabilo para generar enlaces de pago y verificar transacciones. Consulta los [Términos de Uso de Pabilo](https://pabilo.app/terms) para más información sobre el tratamiento de datos.
 
 Simplemente configura tu API Key, selecciona tu cuenta bancaria receptora y comienza a aceptar pagos vía:
 
@@ -26,7 +30,7 @@ Bancos soportados:
 *   Provincial
 *   Y otros bancos locales soportados por Pabilo.
 
-El plugin genera un enlace de pago seguro para cada orden y verifica el pago automáticamente vía webhooks, asegurando una experiencia de compra fluida para tus clientes.
+El plugin genera un enlace de pago seguro para cada orden y verifica el pago automáticamente vía webhooks (con validación ante la API de Pabilo), asegurando una experiencia de compra fluida para tus clientes.
 
 == Installation ==
 
@@ -52,6 +56,11 @@ Soportamos transferencias y pago móvil de los principales bancos de Venezuela, 
 2.  Opción de pago en el checkout.
 
 == Changelog ==
+
+= 1.0.3 =
+*   Verificación de webhook ante la API de Pabilo antes de marcar pago como completado (mitigación de seguridad).
+*   Compatibilidad con WordPress.org: Requires Plugins, Requires PHP, Tested up to 6.9.
+*   Documentación de privacidad y enlace a Términos de Uso de Pabilo.
 
 = 1.0.2 =
 *   Traducción completa al español.
