@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Pasarela de Pago Pabilo para WooCommerce
+ * Plugin Name: Pabilo Payment Gateway for WooCommerce
  * Plugin URI: https://pabilo.app
- * Description: La Pasarela de Pago Pabilo te permite aceptar pagos vía Pago Móvil y Transferencia Bancaria (Banco de Venezuela, Mercantil, Banesco, Provincial) de forma fácil y segura.
+ * Description: Accept Pago Móvil and bank transfers from Venezuela (Banco de Venezuela, Mercantil, Banesco, Provincial) via Pabilo.
  * Version: 1.0.3
  * Author: Pabilo
  * Author URI: https://pabilo.app
@@ -151,7 +151,7 @@ function wc_pabilo_gateway_init() {
 				if ( ! empty( $plan_data['name'] ) ) {
 					$plan_name = $plan_data['name'];
 					$plan_type = isset( $plan_data['planType'] ) ? $plan_data['planType'] : '';
-					
+					/* translators: %s: plan name from Pabilo API */
 					$plan_info = ' - ' . sprintf( __( 'Plan: %s', 'wc-pabilo-gateway' ), $plan_name );
 					if ( ! empty( $plan_type ) ) {
 						$plan_info .= ' (' . $plan_type . ')';
@@ -252,6 +252,7 @@ function wc_pabilo_gateway_init() {
 				'name'                     => '',
 				'amount'                   => $amount,
 				'is_usd'                   => get_woocommerce_currency() === 'USD',
+				/* translators: %s: WooCommerce order number */
 				'description'              => sprintf( __( 'Orden #%s', 'wc-pabilo-gateway' ), $order->get_order_number() ),
 				'notification_by_whastapp' => false,
 				'webhook_url'              => add_query_arg( 'order_id', $order_id, WC()->api_request_url( 'WC_Pabilo_Gateway' ) ),
@@ -278,9 +279,9 @@ function wc_pabilo_gateway_init() {
 			$body = wp_remote_retrieve_body( $response );
 			$data = json_decode( $body, true );
 
-			// Debug API Response
+			// Debug API Response (only when WC logging is enabled)
 			$logger = wc_get_logger();
-			$logger->debug( 'Pabilo Payment Link Response: ' . print_r( $body, true ), array( 'source' => 'pabilo-gateway' ) );
+			$logger->debug( 'Pabilo Payment Link Response: ' . $body, array( 'source' => 'pabilo-gateway' ) );
 
 			// Check for API error response (has "error" field, e.g. BAD_REQUEST)
 			if ( ! empty( $data['error'] ) ) {
@@ -314,7 +315,7 @@ function wc_pabilo_gateway_init() {
 			}
 
 			// Log the unexpected response for debugging
-			$order->add_order_note( 'Error API Pabilo: Respuesta inesperada. ' . print_r( $body, true ) );
+			$order->add_order_note( 'Error API Pabilo: Respuesta inesperada. ' . esc_html( substr( $body, 0, 500 ) ) );
 			wc_add_notice( __( 'Error de pago: No se pudo generar el enlace de pago.', 'wc-pabilo-gateway' ), 'error' );
 			return array(
 				'result' => 'failure',
@@ -356,6 +357,7 @@ function wc_pabilo_gateway_init() {
 		 * Handle webhook from Pabilo. Verifies payment status via API before marking order complete.
 		 */
 		public function webhook_handler() {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Webhook from external Pabilo API; order_id in URL is validated via API verification.
 			$order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
 
 			if ( ! $order_id ) {

@@ -1,7 +1,7 @@
-=== Pasarela de Pago Pabilo para WooCommerce ===
+=== Pabilo Payment Gateway for WooCommerce ===
 Contributors: Pabilo
 Donate link: https://pabilo.app
-Tags: woocommerce, payment gateway, venezuela, banco de venezuela, mercantil, banesco, provincial, bolivares, pago movil, transferencia
+Tags: woocommerce, payment gateway, venezuela, bank transfer, pago movil
 Requires at least: 5.0
 Tested up to: 6.9
 Stable tag: 1.0.3
@@ -10,65 +10,60 @@ Requires Plugins: woocommerce
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Acepta pagos vía Pago Móvil y Transferencia Bancaria desde bancos de Venezuela (Banco de Venezuela, Mercantil, Banesco, Provincial) de forma fácil y segura usando Pabilo.
+Accept Pago Móvil and bank transfers from Venezuela (Banco de Venezuela, Mercantil, Banesco, Provincial) via Pabilo.
 
 == Description ==
 
-La Pasarela de Pago Pabilo permite a las tiendas WooCommerce aceptar pagos de los principales bancos de Venezuela a través de un proceso simplificado y verificado.
+Pabilo Payment Gateway lets WooCommerce stores accept payments from major Venezuelan banks through a simple, verified flow.
 
-Este plugin actúa como interfaz para el servicio de pagos [Pabilo](https://pabilo.app). Al configurar la API Key, consientes el envío de datos de orden (monto, descripción, ID de orden) al servicio Pabilo para generar enlaces de pago y verificar transacciones. Consulta los [Términos de Uso de Pabilo](https://pabilo.app/terms) para más información sobre el tratamiento de datos.
+This plugin connects your store to the [Pabilo](https://pabilo.app) payment service. When you configure your API key, you consent to sending order data (amount, description, order ID) to Pabilo to generate payment links and verify transactions. See [Pabilo Terms of Use](https://pabilo.app/terms) for data handling details.
 
-Simplemente configura tu API Key, selecciona tu cuenta bancaria receptora y comienza a aceptar pagos vía:
+Configure your API key, choose the bank account to receive funds, and start accepting:
 
-*   **Pago Móvil**
-*   **Transferencia Bancaria**
+* **Pago Móvil** (mobile payments)
+* **Bank transfers**
 
-Bancos soportados:
-*   Banco de Venezuela
-*   Mercantil
-*   Banesco
-*   Provincial
-*   Y otros bancos locales soportados por Pabilo.
+Supported banks include Banco de Venezuela, Mercantil, Banesco, Provincial, and other banks supported by Pabilo.
 
-El plugin genera un enlace de pago seguro para cada orden y verifica el pago automáticamente vía webhooks (con validación ante la API de Pabilo), asegurando una experiencia de compra fluida para tus clientes.
+The plugin creates a secure payment link for each order and verifies payment automatically via webhooks (with API verification), for a smooth checkout experience.
 
 == Installation ==
 
-1.  Sube los archivos del plugin al directorio `/wp-content/plugins/wc-pabilo-gateway`, o instálalo directamente desde la pantalla de plugins de WordPress.
-2.  Activa el plugin desde la pantalla de 'Plugins' en WordPress.
-3.  Ve a WooCommerce > Ajustes > Pagos > Pasarela de Pago Pabilo para configurarlo.
-4.  Ingresa tu **API Key** obtenida de tu panel de Pabilo.
-5.  Selecciona la cuenta bancaria donde deseas recibir los fondos.
+1. Upload the plugin files to `/wp-content/plugins/pabilo-payment-gateway`, or install via the Plugins screen in WordPress.
+2. Activate the plugin from the Plugins screen.
+3. Go to WooCommerce > Settings > Payments > Pabilo Payment Gateway to configure.
+4. Enter your **API Key** from your Pabilo dashboard.
+5. Select the bank account where you want to receive funds.
 
 == Frequently Asked Questions ==
 
-= ¿Necesito una cuenta en Pabilo? =
+= Do I need a Pabilo account? =
 
-Sí, necesitas una cuenta registrada en [pabilo.app](https://pabilo.app) para obtener tus credenciales API.
+Yes. Sign up at [pabilo.app](https://pabilo.app) to get your API credentials.
 
-= ¿Qué bancos son soportados? =
+= Which banks are supported? =
 
-Soportamos transferencias y pago móvil de los principales bancos de Venezuela, incluyendo Banco de Venezuela, Mercantil, Banesco y Provincial.
+The plugin supports transfers and Pago Móvil from major Venezuelan banks, including Banco de Venezuela, Mercantil, Banesco, and Provincial.
 
 == Screenshots ==
 
-1.  Página de configuración del plugin en WooCommerce.
-2.  Opción de pago en el checkout.
+1. Plugin settings in WooCommerce.
+2. Payment option at checkout.
 
 == Changelog ==
 
 = 1.0.3 =
-*   Verificación de webhook ante la API de Pabilo antes de marcar pago como completado (mitigación de seguridad).
-*   Compatibilidad con WordPress.org: Requires Plugins, Requires PHP, Tested up to 6.9.
-*   Documentación de privacidad y enlace a Términos de Uso de Pabilo.
+* Verify webhook with Pabilo API before marking order paid (security).
+* WordPress.org compatibility: Requires Plugins, Requires PHP, Tested up to 6.9.
+* Privacy and Terms of Use documentation.
 
 = 1.0.2 =
-*   Traducción completa al español.
-*   Mención explícita de Pago Móvil y Transferencia.
+* Full Spanish translation.
+* Pago Móvil and bank transfer messaging.
 
 = 1.0.1 =
-*   Mejoras en descripciones e iconos.
-*   Lógica de verificación de webhook actualizada.
+* Description and icon improvements.
+* Webhook verification logic updated.
 
 = 1.0.0 =
-*   Lanzamiento inicial.
+* Initial release.

@@ -1,0 +1,21 @@
+WordPress.org submission note
+============================
+
+Slug restriction: The term "wc" is not allowed in the plugin slug on WordPress.org.
+
+When you create the ZIP for submission, use a root folder name that does NOT contain "wc", for example:
+
+  pabilo-payment-gateway
+
+So the ZIP structure should be:
+
+  pabilo-payment-gateway/
+    wc-pabilo-gateway.php
+    readme.txt
+    readme-es.txt
+    includes/
+    assets/
+
+(i.e. put the current plugin contents inside a folder named "pabilo-payment-gateway", not "wc-pabilo-gateway").
+
+This way the directory slug will be "pabilo-payment-gateway" and will pass the guidelines.
