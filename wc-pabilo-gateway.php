@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Pabilo Payment Gateway for WooCommerce
- * Plugin URI: https://pabilo.app
+ * Plugin URI: https://github.com/AndrusGerman/wc-pabilo-gateway
  * Description: Accept Pago Móvil and bank transfers from Venezuela (Banco de Venezuela, Mercantil, Banesco, Provincial) via Pabilo.
  * Version: 1.0.3
  * Author: Pabilo
- * Author URI: https://pabilo.app
+ * Author URI: https://github.com/AndrusGerman
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: pabilo-payment-gateway
