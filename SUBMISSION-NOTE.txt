@@ -10,12 +10,12 @@ When you create the ZIP for submission, use a root folder name that does NOT con
 So the ZIP structure should be:
 
   pabilo-payment-gateway/
-    wc-pabilo-gateway.php
+    pabilo-payment-gateway.php
     readme.txt
     readme-es.txt
     includes/
     assets/
 
-(i.e. put the current plugin contents inside a folder named "pabilo-payment-gateway", not "wc-pabilo-gateway").
+(i.e. put the current plugin contents inside a folder named "pabilo-payment-gateway", not "pabilo-payment-gateway").
 
 This way the directory slug will be "pabilo-payment-gateway" and will pass the guidelines.
