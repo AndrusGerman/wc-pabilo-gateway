@@ -432,35 +432,52 @@ function wc_pabilo_gateway_init() {
 			$status = isset( $data['status'] ) ? strtolower( (string) $data['status'] ) : '';
 			$payment_link_id = isset( $data['payment_link_id'] ) ? sanitize_text_field( $data['payment_link_id'] ) : '';
 
-			if ( 'paid' === $status ) {
-                // Security 1: Check against stored ID in order meta
-                $stored_link_id = $order->get_meta( '_pabilo_payment_link_id' );
-                if ( ! empty( $stored_link_id ) && $stored_link_id !== $payment_link_id ) {
-                    $order->add_order_note( __( 'Webhook rechazado: ID del link de pago no coincide con el guardado en la orden.', 'pabilo-payment-gateway' ) );
-                    status_header( 400 ); // Bad request
-                    exit;
-                }
-                
-				// Security 2: verify with Pabilo API before marking as paid
-				$api_key = $this->get_option( 'api_key' );
-				if ( ! $this->verify_payment_status_via_api( $payment_link_id, $api_key ) ) {
-					$order->add_order_note( __( 'Webhook Pabilo rechazado: verificación API fallida (status no es paid o user_id incorrecto).', 'pabilo-payment-gateway' ) );
-					status_header( 200 );
-					exit;
-				}
+			switch ( $status ) {
+				case 'paid':
+					// Security 1: Check against stored ID in order meta
+					$stored_link_id = $order->get_meta( '_pabilo_payment_link_id' );
+					if ( ! empty( $stored_link_id ) && $stored_link_id !== $payment_link_id ) {
+						$order->add_order_note( __( 'Webhook rechazado: ID del link de pago no coincide con el guardado en la orden.', 'pabilo-payment-gateway' ) );
+						status_header( 400 ); // Bad request
+						exit;
+					}
+					
+					// Security 2: verify with Pabilo API before marking as paid
+					$api_key = $this->get_option( 'api_key' );
+					if ( ! $this->verify_payment_status_via_api( $payment_link_id, $api_key ) ) {
+						$order->add_order_note( __( 'Webhook Pabilo rechazado: verificación API fallida (status no es paid o user_id incorrecto).', 'pabilo-payment-gateway' ) );
+						status_header( 200 );
+						exit;
+					}
 
-				$order->payment_complete( $payment_link_id );
+					$order->payment_complete( $payment_link_id );
 
-				$note = __( 'Pago Pabilo verificado vía webhook.', 'pabilo-payment-gateway' );
-				if ( $payment_link_id ) {
-					$note .= ' ID: ' . $payment_link_id;
-				}
-				if ( ! empty( $data['user_bank_payment']['bank_reference_id'] ) ) {
-					$note .= ' Ref: ' . sanitize_text_field( $data['user_bank_payment']['bank_reference_id'] );
-				}
-				$order->add_order_note( $note );
-			} elseif ( in_array( $status, array( 'failed', 'canceled', 'expired' ), true ) ) {
-				$order->update_status( 'failed', __( 'Pago Pabilo fallido o cancelado.', 'pabilo-payment-gateway' ) );
+					$note = __( 'Pago Pabilo verificado vía webhook.', 'pabilo-payment-gateway' );
+					if ( $payment_link_id ) {
+						$note .= ' ID: ' . $payment_link_id;
+					}
+					if ( ! empty( $data['user_bank_payment']['bank_reference_id'] ) ) {
+						$note .= ' Ref: ' . sanitize_text_field( $data['user_bank_payment']['bank_reference_id'] );
+					}
+					$order->add_order_note( $note );
+					break;
+
+				case 'pending':
+					$order->update_status( 'pending', __( 'Pago Pabilo pendiente de confirmación.', 'pabilo-payment-gateway' ) );
+					break;
+
+				case 'failed':
+				case 'canceled':
+				case 'expired':
+					/* translators: %s: payment status */
+					$order->update_status( 'failed', sprintf( __( 'Pago Pabilo no exitoso. Estado: %s', 'pabilo-payment-gateway' ), $status ) );
+					break;
+				
+				default:
+					// Log unknown status but don't fail
+					/* translators: %s: payment status */
+					$order->add_order_note( sprintf( __( 'Webhook Pabilo recibido con estado desconocido: %s', 'pabilo-payment-gateway' ), $status ) );
+					break;
 			}
 
 			status_header( 200 );
