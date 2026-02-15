@@ -4,7 +4,7 @@ Donate link: https://pabilo.app
 Tags: woocommerce, payment gateway, venezuela, banco de venezuela, mercantil, banesco, provincial, bolivares, pago movil, transferencia
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 License: GPLv2 or later
@@ -56,6 +56,12 @@ Soportamos transferencias y pago móvil de los principales bancos de Venezuela, 
 2.  Opción de pago en el checkout.
 
 == Changelog ==
+
+= 1.0.4 =
+*   Nueva funcionalidad: Soporte nativo para WooCommerce Blocks Checkout.
+*   Seguridad: Verificación mejorada de webhooks (comprobación de ID de Link de Pago).
+*   Seguridad: Validación de propiedad del link de pago contra la cuenta de administrador.
+*   Corrección: Prevenido error fatal en Blocks checkout durante el procesamiento del pago.
 
 = 1.0.3 =
 *   Verificación de webhook ante la API de Pabilo antes de marcar pago como completado (mitigación de seguridad).

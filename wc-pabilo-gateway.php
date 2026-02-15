@@ -3,7 +3,7 @@
  * Plugin Name: Pabilo Payment Gateway for WooCommerce
  * Plugin URI: https://github.com/AndrusGerman/wc-pabilo-gateway
  * Description: Accept Pago Móvil and bank transfers from Venezuela (Banco de Venezuela, Mercantil, Banesco, Provincial) via Pabilo.
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Pabilo
  * Author URI: https://github.com/AndrusGerman
  * License: GPLv2 or later
@@ -133,6 +133,23 @@ function wc_pabilo_gateway_init() {
 			if ( empty( $api_key ) ) {
 				$options[''] = __( 'Guarda tu API Key primero', 'pabilo-payment-gateway' );
 				return $options;
+			}
+
+			// 0. Get User Info (/me) for security validation
+			$response_me = wp_remote_get( 'https://api.pabilo.app/me', array(
+				'headers' => array(
+					'appkey' => $api_key,
+				),
+				'timeout' => 15,
+			) );
+
+			if ( ! is_wp_error( $response_me ) ) {
+				$body_me = wp_remote_retrieve_body( $response_me );
+				$me_data = json_decode( $body_me, true );
+
+				if ( isset( $me_data['user']['id'] ) ) {
+					update_option( 'wc_pabilo_admin_user_id', $me_data['user']['id'] );
+				}
 			}
 
 			// 1. Get User Plan (/me/plan)
@@ -308,6 +325,23 @@ function wc_pabilo_gateway_init() {
 			}
 
 			if ( ! empty( $payment_url ) ) {
+                // Security: Store Payment Link ID (if available) to verify webhook later
+                $link_id = '';
+                if ( isset( $data['paymentlink']['id'] ) ) {
+                    $link_id = $data['paymentlink']['id'];
+                } elseif ( isset( $data['id'] ) ) {
+                    $link_id = $data['id'];
+                } elseif ( isset( $data['payment_link']['id'] ) ) {
+                    $link_id = $data['payment_link']['id'];
+                } elseif ( isset( $data['uuid'] ) ) {
+                     $link_id = $data['uuid'];
+                }
+                
+                if ( ! empty( $link_id ) ) {
+                    $order->update_meta_data( '_pabilo_payment_link_id', $link_id );
+                    $order->save();
+                }
+
 				return array(
 					'result'   => 'success',
 					'redirect' => $payment_url,
@@ -348,9 +382,24 @@ function wc_pabilo_gateway_init() {
 
 			$body = wp_remote_retrieve_body( $response );
 			$data = json_decode( $body, true );
-
+            
+            // 1. Verify Status
 			$status = isset( $data['data']['payment_link']['status'] ) ? strtolower( $data['data']['payment_link']['status'] ) : '';
-			return 'paid' === $status;
+            if ( 'paid' !== $status ) {
+                return false;
+            }
+            
+            // 2. Verify User ID (Security: Prevent payment link spoofing from another account)
+            $link_user_id = isset( $data['data']['payment_link']['user_id'] ) ? $data['data']['payment_link']['user_id'] : '';
+            $admin_user_id = get_option( 'wc_pabilo_admin_user_id' );
+            
+            if ( ! empty( $admin_user_id ) && (string) $link_user_id !== (string) $admin_user_id ) {
+                $logger = wc_get_logger();
+                $logger->warning( "Pabilo Security Violation: Payment Link User ID ({$link_user_id}) does not match Store Admin ID ({$admin_user_id}).", array( 'source' => 'pabilo-gateway' ) );
+                return false;
+            }
+
+			return true;
 		}
 
 		/**
@@ -384,10 +433,18 @@ function wc_pabilo_gateway_init() {
 			$payment_link_id = isset( $data['payment_link_id'] ) ? sanitize_text_field( $data['payment_link_id'] ) : '';
 
 			if ( 'paid' === $status ) {
-				// Security: verify with Pabilo API before marking as paid
+                // Security 1: Check against stored ID in order meta
+                $stored_link_id = $order->get_meta( '_pabilo_payment_link_id' );
+                if ( ! empty( $stored_link_id ) && $stored_link_id !== $payment_link_id ) {
+                    $order->add_order_note( __( 'Webhook rechazado: ID del link de pago no coincide con el guardado en la orden.', 'pabilo-payment-gateway' ) );
+                    status_header( 400 ); // Bad request
+                    exit;
+                }
+                
+				// Security 2: verify with Pabilo API before marking as paid
 				$api_key = $this->get_option( 'api_key' );
 				if ( ! $this->verify_payment_status_via_api( $payment_link_id, $api_key ) ) {
-					$order->add_order_note( __( 'Webhook Pabilo rechazado: verificación API fallida (posible fraude).', 'pabilo-payment-gateway' ) );
+					$order->add_order_note( __( 'Webhook Pabilo rechazado: verificación API fallida (status no es paid o user_id incorrecto).', 'pabilo-payment-gateway' ) );
 					status_header( 200 );
 					exit;
 				}
