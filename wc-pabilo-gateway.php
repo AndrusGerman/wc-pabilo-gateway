@@ -50,6 +50,7 @@ function wc_pabilo_gateway_init() {
 			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			add_action( 'woocommerce_api_wc_pabilo_gateway', array( $this, 'webhook_handler' ) );
+			add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'display_pabilo_payment_link_in_admin' ), 10, 1 );
 		}
 
 		/**
@@ -555,6 +556,41 @@ function wc_pabilo_gateway_init() {
 
 			status_header( 200 );
 			exit;
+		}
+
+		/**
+		 * Display Pabilo payment link ID and URL in admin order view (after billing address).
+		 *
+		 * @param WC_Order $order Order object.
+		 */
+		public function display_pabilo_payment_link_in_admin( $order ) {
+			if ( ! $order || ! ( $order instanceof WC_Order ) ) {
+				return;
+			}
+			if ( $order->get_payment_method() !== $this->id ) {
+				return;
+			}
+			$link_id = $order->get_meta( '_pabilo_payment_link_id' );
+			$url     = $order->get_meta( '_pabilo_payment_url' );
+			if ( empty( $link_id ) && empty( $url ) ) {
+				return;
+			}
+			?>
+			<div class="pabilo-payment-link-admin" style="margin-top: 12px;">
+				<?php if ( ! empty( $link_id ) ) : ?>
+				<p class="form-field form-field-wide">
+					<strong><?php esc_html_e( 'Id de enlace de pago de Pabilo', 'pabilo-payment-gateway-for-woocommerce' ); ?></strong><br>
+					<?php echo esc_html( $link_id ); ?>
+				</p>
+				<?php endif; ?>
+				<?php if ( ! empty( $url ) ) : ?>
+				<p class="form-field form-field-wide">
+					<strong><?php esc_html_e( 'Enlace de pago Pabilo', 'pabilo-payment-gateway-for-woocommerce' ); ?></strong><br>
+					<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $url ); ?></a>
+				</p>
+				<?php endif; ?>
+			</div>
+			<?php
 		}
 	}
 }
