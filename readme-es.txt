@@ -34,7 +34,7 @@ El plugin genera un enlace de pago seguro para cada orden y verifica el pago aut
 
 == Installation ==
 
-1.  Sube los archivos del plugin al directorio `/wp-content/plugins/pabilo-payment-gateway`, o instálalo directamente desde la pantalla de plugins de WordPress.
+1.  Sube los archivos del plugin al directorio `/wp-content/plugins/pabilo-payment-gateway-for-woocommerce`, o instálalo directamente desde la pantalla de plugins de WordPress.
 2.  Activa el plugin desde la pantalla de 'Plugins' en WordPress.
 3.  Ve a WooCommerce > Ajustes > Pagos > Pasarela de Pago Pabilo para configurarlo.
 4.  Ingresa tu **API Key** obtenida de tu panel de Pabilo.

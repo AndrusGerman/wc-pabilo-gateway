@@ -8,7 +8,7 @@
  * Author URI: https://github.com/AndrusGerman
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: pabilo-payment-gateway
+ * Text Domain: pabilo-payment-gateway-for-woocommerce
  * Requires at least: 5.0
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -33,8 +33,8 @@ function wc_pabilo_gateway_init() {
 			$this->id                 = 'pabilo_gateway';
 			$this->icon               = 'https://pabilo.app/pabilo_favicon_light.png'; // URL of the icon that will be displayed on checkout page near your gateway name
 			$this->has_fields         = false;
-			$this->method_title       = __( 'Pasarela de Pago Pabilo', 'pabilo-payment-gateway' );
-			$this->method_description = __( 'Acepta pagos vía Pago Móvil y Transferencia Bancaria (Banco de Venezuela, Mercantil, Banesco, Provincial) de forma segura con Pabilo.', 'pabilo-payment-gateway' );
+			$this->method_title       = __( 'Pasarela de Pago Pabilo', 'pabilo-payment-gateway-for-woocommerce' );
+			$this->method_description = __( 'Acepta pagos vía Pago Móvil y Transferencia Bancaria (Banco de Venezuela, Mercantil, Banesco, Provincial) de forma segura con Pabilo.', 'pabilo-payment-gateway-for-woocommerce' );
 
 			// Load the settings.
 			$this->init_form_fields();
@@ -79,35 +79,35 @@ function wc_pabilo_gateway_init() {
 		public function init_form_fields() {
 			$this->form_fields = array(
 				'enabled' => array(
-					'title'   => __( 'Activar/Desactivar', 'pabilo-payment-gateway' ),
+					'title'   => __( 'Activar/Desactivar', 'pabilo-payment-gateway-for-woocommerce' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Activar Pago con Pabilo', 'pabilo-payment-gateway' ),
+					'label'   => __( 'Activar Pago con Pabilo', 'pabilo-payment-gateway-for-woocommerce' ),
 					'default' => 'yes'
 				),
 				'title' => array(
-					'title'       => __( 'Título', 'pabilo-payment-gateway' ),
+					'title'       => __( 'Título', 'pabilo-payment-gateway-for-woocommerce' ),
 					'type'        => 'text',
-					'description' => __( 'Este título es el que el usuario ve durante el pago.', 'pabilo-payment-gateway' ),
-					'default'     => __( 'Pago Móvil / Transferencia (Pabilo)', 'pabilo-payment-gateway' ),
+					'description' => __( 'Este título es el que el usuario ve durante el pago.', 'pabilo-payment-gateway-for-woocommerce' ),
+					'default'     => __( 'Pago Móvil / Transferencia (Pabilo)', 'pabilo-payment-gateway-for-woocommerce' ),
 					'desc_tip'    => true,
 				),
 				'description' => array(
-					'title'       => __( 'Descripción', 'pabilo-payment-gateway' ),
+					'title'       => __( 'Descripción', 'pabilo-payment-gateway-for-woocommerce' ),
 					'type'        => 'textarea',
-					'description' => __( 'Descripción del método de pago que el cliente verá en el checkout.', 'pabilo-payment-gateway' ),
-					'default'     => __( 'Realiza tu pago de forma segura con Pago Móvil o Transferencia Bancaria.', 'pabilo-payment-gateway' ),
+					'description' => __( 'Descripción del método de pago que el cliente verá en el checkout.', 'pabilo-payment-gateway-for-woocommerce' ),
+					'default'     => __( 'Realiza tu pago de forma segura con Pago Móvil o Transferencia Bancaria.', 'pabilo-payment-gateway-for-woocommerce' ),
 					'desc_tip'    => true,
 				),
 				'api_key' => array(
-					'title'       => __( 'API Key', 'pabilo-payment-gateway' ),
+					'title'       => __( 'API Key', 'pabilo-payment-gateway-for-woocommerce' ),
 					'type'        => 'password',
-					'description' => __( 'Ingresa tu API Key de Pabilo. Se conectará automáticamente para obtener tu usuario.', 'pabilo-payment-gateway' ),
+					'description' => __( 'Ingresa tu API Key de Pabilo. Se conectará automáticamente para obtener tu usuario.', 'pabilo-payment-gateway-for-woocommerce' ),
 					'desc_tip'    => true,
 				),
 				'user_bank_id' => array(
-					'title'       => __( 'Cuenta Bancaria', 'pabilo-payment-gateway' ),
+					'title'       => __( 'Cuenta Bancaria', 'pabilo-payment-gateway-for-woocommerce' ),
 					'type'        => 'select',
-					'description' => __( 'Selecciona la cuenta bancaria para recibir los pagos.', 'pabilo-payment-gateway' ),
+					'description' => __( 'Selecciona la cuenta bancaria para recibir los pagos.', 'pabilo-payment-gateway-for-woocommerce' ),
 					'options'     => $this->get_bank_accounts_and_user_info(),
 					'default'     => '',
 					'desc_tip'    => true,
@@ -131,7 +131,7 @@ function wc_pabilo_gateway_init() {
 			$api_key  = isset( $settings['api_key'] ) ? $settings['api_key'] : '';
 
 			if ( empty( $api_key ) ) {
-				$options[''] = __( 'Guarda tu API Key primero', 'pabilo-payment-gateway' );
+				$options[''] = __( 'Guarda tu API Key primero', 'pabilo-payment-gateway-for-woocommerce' );
 				return $options;
 			}
 
@@ -169,7 +169,7 @@ function wc_pabilo_gateway_init() {
 					$plan_name = $plan_data['name'];
 					$plan_type = isset( $plan_data['planType'] ) ? $plan_data['planType'] : '';
 					/* translators: %s: plan name from Pabilo API */
-					$plan_info = ' - ' . sprintf( __( 'Plan: %s', 'pabilo-payment-gateway' ), $plan_name );
+					$plan_info = ' - ' . sprintf( __( 'Plan: %s', 'pabilo-payment-gateway-for-woocommerce' ), $plan_name );
 					if ( ! empty( $plan_type ) ) {
 						$plan_info .= ' (' . $plan_type . ')';
 					}
@@ -177,7 +177,7 @@ function wc_pabilo_gateway_init() {
 			}
 
             // Add a disabled option to show connection status and plan
-            $options[''] = __( 'Conectado', 'pabilo-payment-gateway' ) . $plan_info;
+            $options[''] = __( 'Conectado', 'pabilo-payment-gateway-for-woocommerce' ) . $plan_info;
 
             // 2. Get Bank Accounts (/me/usersbank)
 			$response_banks = wp_remote_get( 'https://api.pabilo.app/me/usersbank', array(
@@ -188,7 +188,7 @@ function wc_pabilo_gateway_init() {
 			) );
 
 			if ( is_wp_error( $response_banks ) ) {
-				$options[''] = __( 'Error obteniendo cuentas de banco', 'pabilo-payment-gateway' );
+				$options[''] = __( 'Error obteniendo cuentas de banco', 'pabilo-payment-gateway-for-woocommerce' );
 				return $options;
 			}
 
@@ -241,7 +241,7 @@ function wc_pabilo_gateway_init() {
 			}
 
 			if ( count( $options ) <= 1 ) { // Only default option exists
-				$options[''] = __( 'No se encontraron cuentas habilitadas para link de pago', 'pabilo-payment-gateway' );
+				$options[''] = __( 'No se encontraron cuentas habilitadas para link de pago', 'pabilo-payment-gateway-for-woocommerce' );
 			}
 
 			return $options;
@@ -257,7 +257,7 @@ function wc_pabilo_gateway_init() {
 			$user_bank_id = $this->get_option( 'user_bank_id' );
 
 			if ( empty( $api_key ) || empty( $user_bank_id ) ) {
-				wc_add_notice( __( 'Error de pago: Falta configuración.', 'pabilo-payment-gateway' ), 'error' );
+				wc_add_notice( __( 'Error de pago: Falta configuración.', 'pabilo-payment-gateway-for-woocommerce' ), 'error' );
 				return array(
 					'result' => 'failure',
 				);
@@ -270,7 +270,7 @@ function wc_pabilo_gateway_init() {
 				'amount'                   => $amount,
 				'is_usd'                   => get_woocommerce_currency() === 'USD',
 				/* translators: %s: WooCommerce order number */
-				'description'              => sprintf( __( 'Orden #%s', 'pabilo-payment-gateway' ), $order->get_order_number() ),
+				'description'              => sprintf( __( 'Orden #%s', 'pabilo-payment-gateway-for-woocommerce' ), $order->get_order_number() ),
 				'notification_by_whastapp' => false,
 				'webhook_url'              => add_query_arg( 'order_id', $order_id, WC()->api_request_url( 'WC_Pabilo_Gateway' ) ),
 				'user_bank_id'             => $user_bank_id,
@@ -287,7 +287,7 @@ function wc_pabilo_gateway_init() {
 			) );
 
 			if ( is_wp_error( $response ) ) {
-				wc_add_notice( __( 'Error de conexión:', 'pabilo-payment-gateway' ) . ' ' . $response->get_error_message(), 'error' );
+				wc_add_notice( __( 'Error de conexión:', 'pabilo-payment-gateway-for-woocommerce' ) . ' ' . $response->get_error_message(), 'error' );
 				return array(
 					'result' => 'failure',
 				);
@@ -304,7 +304,7 @@ function wc_pabilo_gateway_init() {
 			if ( ! empty( $data['error'] ) ) {
 				$error_msg = isset( $data['message'] ) ? $data['message'] : $data['error'];
 				$order->add_order_note( 'Error API Pabilo: ' . $error_msg );
-				wc_add_notice( __( 'Error de pago:', 'pabilo-payment-gateway' ) . ' ' . esc_html( $error_msg ), 'error' );
+				wc_add_notice( __( 'Error de pago:', 'pabilo-payment-gateway-for-woocommerce' ) . ' ' . esc_html( $error_msg ), 'error' );
 				return array(
 					'result' => 'failure',
 				);
@@ -350,7 +350,7 @@ function wc_pabilo_gateway_init() {
 
 			// Log the unexpected response for debugging
 			$order->add_order_note( 'Error API Pabilo: Respuesta inesperada. ' . esc_html( substr( $body, 0, 500 ) ) );
-			wc_add_notice( __( 'Error de pago: No se pudo generar el enlace de pago.', 'pabilo-payment-gateway' ), 'error' );
+			wc_add_notice( __( 'Error de pago: No se pudo generar el enlace de pago.', 'pabilo-payment-gateway-for-woocommerce' ), 'error' );
 			return array(
 				'result' => 'failure',
 			);
@@ -437,7 +437,7 @@ function wc_pabilo_gateway_init() {
 					// Security 1: Check against stored ID in order meta
 					$stored_link_id = $order->get_meta( '_pabilo_payment_link_id' );
 					if ( ! empty( $stored_link_id ) && $stored_link_id !== $payment_link_id ) {
-						$order->add_order_note( __( 'Webhook rechazado: ID del link de pago no coincide con el guardado en la orden.', 'pabilo-payment-gateway' ) );
+						$order->add_order_note( __( 'Webhook rechazado: ID del link de pago no coincide con el guardado en la orden.', 'pabilo-payment-gateway-for-woocommerce' ) );
 						status_header( 400 ); // Bad request
 						exit;
 					}
@@ -445,14 +445,14 @@ function wc_pabilo_gateway_init() {
 					// Security 2: verify with Pabilo API before marking as paid
 					$api_key = $this->get_option( 'api_key' );
 					if ( ! $this->verify_payment_status_via_api( $payment_link_id, $api_key ) ) {
-						$order->add_order_note( __( 'Webhook Pabilo rechazado: verificación API fallida (status no es paid o user_id incorrecto).', 'pabilo-payment-gateway' ) );
+						$order->add_order_note( __( 'Webhook Pabilo rechazado: verificación API fallida (status no es paid o user_id incorrecto).', 'pabilo-payment-gateway-for-woocommerce' ) );
 						status_header( 200 );
 						exit;
 					}
 
 					$order->payment_complete( $payment_link_id );
 
-					$note = __( 'Pago Pabilo verificado vía webhook.', 'pabilo-payment-gateway' );
+					$note = __( 'Pago Pabilo verificado vía webhook.', 'pabilo-payment-gateway-for-woocommerce' );
 					if ( $payment_link_id ) {
 						$note .= ' ID: ' . $payment_link_id;
 					}
@@ -463,20 +463,20 @@ function wc_pabilo_gateway_init() {
 					break;
 
 				case 'pending':
-					$order->update_status( 'pending', __( 'Pago Pabilo pendiente de confirmación.', 'pabilo-payment-gateway' ) );
+					$order->update_status( 'pending', __( 'Pago Pabilo pendiente de confirmación.', 'pabilo-payment-gateway-for-woocommerce' ) );
 					break;
 
 				case 'failed':
 				case 'canceled':
 				case 'expired':
 					/* translators: %s: payment status */
-					$order->update_status( 'failed', sprintf( __( 'Pago Pabilo no exitoso. Estado: %s', 'pabilo-payment-gateway' ), $status ) );
+					$order->update_status( 'failed', sprintf( __( 'Pago Pabilo no exitoso. Estado: %s', 'pabilo-payment-gateway-for-woocommerce' ), $status ) );
 					break;
 				
 				default:
 					// Log unknown status but don't fail
 					/* translators: %s: payment status */
-					$order->add_order_note( sprintf( __( 'Webhook Pabilo recibido con estado desconocido: %s', 'pabilo-payment-gateway' ), $status ) );
+					$order->add_order_note( sprintf( __( 'Webhook Pabilo recibido con estado desconocido: %s', 'pabilo-payment-gateway-for-woocommerce' ), $status ) );
 					break;
 			}
 
