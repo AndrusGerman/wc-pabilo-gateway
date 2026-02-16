@@ -3,7 +3,7 @@
  * Plugin Name: Pabilo Payment Gateway for WooCommerce
  * Plugin URI: https://github.com/AndrusGerman/pabilo-payment-gateway-for-woocommerce
  * Description: Accept Pago Móvil and bank transfers from Venezuela (Banco de Venezuela, Mercantil, Banesco, Provincial) via Pabilo.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: Pabilo
  * Author URI: https://github.com/AndrusGerman
  * License: GPLv2 or later
@@ -263,14 +263,42 @@ function wc_pabilo_gateway_init() {
 				);
 			}
 
+			// Reuse existing payment link if order already has one (e.g. user went back and clicked Pay again)
+			$stored_url     = $order->get_meta( '_pabilo_payment_url' );
+			$stored_id      = $order->get_meta( '_pabilo_payment_link_id' );
+			$stored_amount  = $order->get_meta( '_pabilo_payment_link_amount' );
+			$current_amount = floatval( $order->get_total() );
+			$order_status   = $order->get_status();
+			$description    = sprintf( __( 'Orden #%s', 'pabilo-payment-gateway-for-woocommerce' ), $order->get_order_number() );
+
+			if ( ! empty( $stored_url ) && ! empty( $stored_id ) && in_array( $order_status, array( 'pending', 'on-hold' ), true ) ) {
+				$amount_unchanged = ( '' !== $stored_amount && abs( floatval( $stored_amount ) - $current_amount ) < 0.01 );
+				if ( $amount_unchanged ) {
+					return array(
+						'result'   => 'success',
+						'redirect' => $stored_url,
+					);
+				}
+				// Amount or description changed: update existing link via PATCH and redirect to same URL
+				$patch_result = $this->patch_payment_link( $stored_id, $current_amount, $description, $api_key );
+				if ( $patch_result ) {
+					$order->update_meta_data( '_pabilo_payment_link_amount', $current_amount );
+					$order->save();
+					return array(
+						'result'   => 'success',
+						'redirect' => $stored_url,
+					);
+				}
+				// PATCH failed: fall through to create a new payment link
+			}
+
 			// Prepare payload - format must match Pabilo API expectations
-			$amount = floatval( $order->get_total() );
+			$amount  = $current_amount;
 			$payload = array(
 				'name'                     => '',
 				'amount'                   => $amount,
 				'is_usd'                   => get_woocommerce_currency() === 'USD',
-				/* translators: %s: WooCommerce order number */
-				'description'              => sprintf( __( 'Orden #%s', 'pabilo-payment-gateway-for-woocommerce' ), $order->get_order_number() ),
+				'description'              => $description,
 				'notification_by_whastapp' => false,
 				'webhook_url'              => add_query_arg( 'order_id', $order_id, WC()->api_request_url( 'WC_Pabilo_Gateway' ) ),
 				'user_bank_id'             => $user_bank_id,
@@ -339,6 +367,8 @@ function wc_pabilo_gateway_init() {
                 
                 if ( ! empty( $link_id ) ) {
                     $order->update_meta_data( '_pabilo_payment_link_id', $link_id );
+                    $order->update_meta_data( '_pabilo_payment_url', $payment_url );
+                    $order->update_meta_data( '_pabilo_payment_link_amount', $amount );
                     $order->save();
                 }
 
@@ -354,6 +384,49 @@ function wc_pabilo_gateway_init() {
 			return array(
 				'result' => 'failure',
 			);
+		}
+
+		/**
+		 * Update an existing payment link via PATCH (amount and/or description).
+		 *
+		 * @param string $payment_link_id The Pabilo payment link ID.
+		 * @param float  $amount          New amount.
+		 * @param string $description     New description (e.g. "Orden #123").
+		 * @param string $api_key         The Pabilo API key.
+		 * @return bool True if PATCH succeeded.
+		 */
+		private function patch_payment_link( $payment_link_id, $amount, $description, $api_key ) {
+			if ( empty( $payment_link_id ) || empty( $api_key ) ) {
+				return false;
+			}
+			$payload = array(
+				'amount'      => floatval( $amount ),
+				'description' => $description,
+			);
+			$response = wp_remote_request(
+				'https://api.pabilo.app/paymentlink/' . sanitize_text_field( $payment_link_id ) . '/patch',
+				array(
+					'method'  => 'PATCH',
+					'headers' => array(
+						'Content-Type' => 'application/json',
+						'appkey'      => $api_key,
+					),
+					'body'    => wp_json_encode( $payload ),
+					'timeout' => 15,
+				)
+			);
+			if ( is_wp_error( $response ) ) {
+				return false;
+			}
+			$code = wp_remote_retrieve_response_code( $response );
+			$body = wp_remote_retrieve_body( $response );
+			$data = json_decode( $body, true );
+			if ( $code >= 200 && $code < 300 && empty( $data['error'] ) ) {
+				return true;
+			}
+			$logger = wc_get_logger();
+			$logger->debug( 'Pabilo PATCH Payment Link Response: ' . $body, array( 'source' => 'pabilo-gateway' ) );
+			return false;
 		}
 
 		/**

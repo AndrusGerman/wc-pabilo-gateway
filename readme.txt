@@ -4,7 +4,7 @@ Donate link: https://pabilo.app
 Tags: woocommerce, payment gateway, venezuela, bank transfer, pago movil
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 License: GPLv2 or later
@@ -25,7 +25,7 @@ Configure your API key, choose the bank account to receive funds, and start acce
 
 Supported banks include Banco de Venezuela, Mercantil, Banesco, Provincial, and other banks supported by Pabilo.
 
-The plugin creates a secure payment link for each order and verifies payment automatically via webhooks (with API verification), for a smooth checkout experience.
+The plugin creates one secure payment link per order and verifies payment automatically via webhooks (with API verification). If the customer goes back and clicks Pay again, the same link is reused instead of creating duplicates. If the order total changes (e.g. cart edited), the existing link is updated via Pabilo’s PATCH API so there is still only one link per order.
 
 == Installation ==
 
@@ -51,6 +51,10 @@ The plugin supports transfers and Pago Móvil from major Venezuelan banks, inclu
 2. Payment option at checkout.
 
 == Changelog ==
+
+= 1.0.5 =
+* Feature: Reuse existing payment link when the customer goes back and clicks Pay again (avoids duplicate payment links).
+* Feature: When the order total changes (e.g. cart edited), update the same link via Pabilo PATCH API instead of creating a new one.
 
 = 1.0.4 =
 * Feature: Support for WooCommerce Blocks Checkout (new checkout experience).
